@@ -39,7 +39,7 @@ public class SysUser extends BaseEntity {
 
     @Column(name = "role")
     @Min(value = 0)
-    @Max(value = 3)
+    @Max(value = 2)
     private Integer role;
 
     @OneToOne
