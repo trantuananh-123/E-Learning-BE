@@ -10,9 +10,13 @@ public interface SysUserService {
 
     GenerateResponse<TokenResponseDTO> login(SysUserRequestDTO dto) throws ParseException;
 
+    GenerateResponse<?> logout(SysUserRequestDTO dto);
+
     GenerateResponse<SysUser> signUp(SysUserRequestDTO dto);
 
     GenerateResponse<SysUser> updateProfile(SysUserRequestDTO dto);
 
     GenerateResponse<SysUser> getUserDetail();
+
+    GenerateResponse<TokenResponseDTO> refreshToken(SysUserRequestDTO dto) throws ParseException;
 }

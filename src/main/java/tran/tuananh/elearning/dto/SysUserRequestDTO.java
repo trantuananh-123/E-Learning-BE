@@ -15,16 +15,32 @@ import java.util.Date;
 public class SysUserRequestDTO extends BaseEntity {
 
     private String id;
+
     private String firstName;
+
     private String lastName;
+
     private String password;
+
     private String username;
+
     private String phone;
+
     private String email;
+
     private Date birthday;
+
     private String address;
+
     private Integer role;
+
     private CatsNation catsNation;
+
     private CatsProvince catsProvince;
+
+    private String accessToken;
+
+    private String refreshToken;
+
 
 }

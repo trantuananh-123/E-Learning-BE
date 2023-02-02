@@ -19,9 +19,19 @@ public class UserController {
         return sysUserService.login(dto);
     }
 
+    @PostMapping(value = "/logout")
+    public GenerateResponse logout(@RequestBody SysUserRequestDTO dto) {
+        return sysUserService.logout(dto);
+    }
+
     @PostMapping(value = "/signUp")
     public GenerateResponse signUp(@RequestBody SysUserRequestDTO dto) {
         return sysUserService.signUp(dto);
+    }
+
+    @PostMapping(value = "/refresh-token")
+    public GenerateResponse refreshToken(@RequestBody SysUserRequestDTO dto) throws ParseException {
+        return sysUserService.refreshToken(dto);
     }
 
     @PostMapping(value = "/update-profile")

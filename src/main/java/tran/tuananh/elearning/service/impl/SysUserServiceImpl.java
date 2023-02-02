@@ -52,6 +52,9 @@ public class SysUserServiceImpl implements SysUserService {
     @Value("${my-keycloak.token-url}")
     public String tokenUrl;
 
+    @Value("${my-keycloak.revoke-token-url}")
+    public String revokeTokenUrl;
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -79,7 +82,6 @@ public class SysUserServiceImpl implements SysUserService {
         data.put("username", Collections.singletonList(dto.getUsername()));
         data.put("password", Collections.singletonList(dto.getPassword()));
 
-//        String tokenUrl = CommonFunction.getPropertyValue("my-keycloak.token-url");
         String url = serverURL.concat("/realms/").concat(realm).concat(tokenUrl);
 
         HttpHeaders headers = new HttpHeaders();
@@ -103,8 +105,38 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public GenerateResponse<SysUser> getUserDetail() {
-        return null;
+    public GenerateResponse<?> logout(SysUserRequestDTO dto) {
+        MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
+        data.put("client_id", Collections.singletonList(clientID));
+        data.put("client_secret", Collections.singletonList(clientSecret));
+        data.put("token", Collections.singletonList(dto.getAccessToken()));
+
+        String url = serverURL.concat("/realms/").concat(realm).concat(revokeTokenUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(data, headers);
+
+        ResponseEntity<String> response = null;
+//        Revoke access token
+        try {
+            response = restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            return new GenerateResponse<>(response != null ? response.getStatusCodeValue() : HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        }
+
+        data.put("token", Collections.singletonList(dto.getRefreshToken()));
+        request = new HttpEntity<>(data, headers);
+
+//        Revoke refresh token
+        try {
+            response = restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            return new GenerateResponse<>(response != null ? response.getStatusCodeValue() : HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+        }
+
+        return new GenerateResponse<>(HttpStatus.OK.value(), "Logout successfully", null);
     }
 
     @Override
@@ -150,6 +182,11 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    public GenerateResponse<SysUser> getUserDetail() {
+        return null;
+    }
+
+    @Override
     public GenerateResponse<SysUser> updateProfile(SysUserRequestDTO dto) {
         SysUser sysUser = mapper.fromTo(dto, SysUser.class);
         List<UserRepresentation> userRepresentationList = CommonFunction.getRealmResource().users().search(dto.getUsername());
@@ -171,5 +208,38 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser = sysUserRepository.save(sysUser);
         }
         return new GenerateResponse<>(HttpStatus.OK.value(), "Update profile successfully", sysUser);
+    }
+
+    @Override
+    public GenerateResponse<TokenResponseDTO> refreshToken(SysUserRequestDTO dto) throws ParseException {
+        JSONParser parser = new JSONParser();
+        TokenResponseDTO tokenResponseDTO = new TokenResponseDTO();
+
+        MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
+        data.put("grant_type", Collections.singletonList(OAuth2Constants.REFRESH_TOKEN));
+        data.put("client_id", Collections.singletonList(clientID));
+        data.put("client_secret", Collections.singletonList(clientSecret));
+        data.put("refresh_token", Collections.singletonList(dto.getRefreshToken()));
+
+        String url = serverURL.concat("/realms/").concat(realm).concat(tokenUrl);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(data, headers);
+
+        try {
+            ResponseEntity<String> token = restTemplate.postForEntity(url, request, String.class);
+
+            tokenResponseDTO = objectMapper.readValue(token.getBody(), TokenResponseDTO.class);
+        } catch (Exception e) {
+            String message = "{".concat(e.getMessage().split("[{}]")[1]).concat("}");
+            JSONObject json = (JSONObject) parser.parse(message);
+            String errorMessage = (String) json.get("error_description");
+            log.error(e.getMessage());
+            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null);
+        }
+
+        return new GenerateResponse<>(HttpStatus.OK.value(), "Refresh token successfully", tokenResponseDTO);
     }
 }
