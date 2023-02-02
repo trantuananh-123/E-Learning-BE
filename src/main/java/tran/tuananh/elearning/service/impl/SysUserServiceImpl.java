@@ -182,6 +182,38 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    public GenerateResponse<SysUser> delete(SysUserRequestDTO dto) {
+        SysUser sysUser = mapper.fromTo(dto, SysUser.class);
+        List<UserRepresentation> userRepresentationList = CommonFunction.getRealmResource().users().search(dto.getUsername());
+        if (userRepresentationList.size() != 0) {
+            UserRepresentation userRepresentation = userRepresentationList.get(0);
+            CommonFunction.getUserResource().get(userRepresentation.getId()).remove();
+            sysUser.setId(userRepresentation.getId());
+            sysUser = sysUserRepository.save(sysUser);
+        } else {
+            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), "User does not exist", null);
+        }
+        return new GenerateResponse<>(HttpStatus.OK.value(), "Delete user successfully", sysUser);
+    }
+
+    @Override
+    public GenerateResponse<SysUser> lockAndUnlock(SysUserRequestDTO dto) {
+        String message = dto.getIsActive() ? "Unlock" : "Lock";
+        SysUser sysUser = mapper.fromTo(dto, SysUser.class);
+        List<UserRepresentation> userRepresentationList = CommonFunction.getRealmResource().users().search(dto.getUsername());
+        if (userRepresentationList.size() != 0) {
+            UserRepresentation userRepresentation = userRepresentationList.get(0);
+            userRepresentation.setEnabled(dto.getIsActive());
+            CommonFunction.getUserResource().get(userRepresentation.getId()).update(userRepresentation);
+            sysUser.setId(userRepresentation.getId());
+            sysUser = sysUserRepository.save(sysUser);
+        } else {
+            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), message + " user failed", null);
+        }
+        return new GenerateResponse<>(HttpStatus.OK.value(), message + " user successfully", sysUser);
+    }
+
+    @Override
     public GenerateResponse<SysUser> getUserDetail() {
         return null;
     }
@@ -205,9 +237,12 @@ public class SysUserServiceImpl implements SysUserService {
 
             CommonFunction.getUserResource().get(userRepresentation.getId()).update(userRepresentation);
 
+            sysUser.setId(userRepresentation.getId());
             sysUser = sysUserRepository.save(sysUser);
+        } else {
+            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), "User does not exist", null);
         }
-        return new GenerateResponse<>(HttpStatus.OK.value(), "Update profile successfully", sysUser);
+        return new GenerateResponse<>(HttpStatus.OK.value(), "Delete user successfully", sysUser);
     }
 
     @Override

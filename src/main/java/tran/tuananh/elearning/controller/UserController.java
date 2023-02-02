@@ -8,7 +8,7 @@ import tran.tuananh.elearning.response.GenerateResponse;
 import tran.tuananh.elearning.service.SysUserService;
 
 @RestController
-@RequestMapping(value = "")
+@RequestMapping(value = "user")
 public class UserController {
 
     @Autowired
@@ -27,6 +27,21 @@ public class UserController {
     @PostMapping(value = "/signUp")
     public GenerateResponse signUp(@RequestBody SysUserRequestDTO dto) {
         return sysUserService.signUp(dto);
+    }
+
+    @PostMapping(value = "/delete")
+    public GenerateResponse delete(@RequestBody SysUserRequestDTO dto) {
+        return sysUserService.delete(dto);
+    }
+
+    @PostMapping(value = "/lock")
+    public GenerateResponse lock(@RequestBody SysUserRequestDTO dto) {
+        return sysUserService.lockAndUnlock(dto);
+    }
+
+    @PostMapping(value = "/unlock")
+    public GenerateResponse unlock(@RequestBody SysUserRequestDTO dto) {
+        return sysUserService.lockAndUnlock(dto);
     }
 
     @PostMapping(value = "/refresh-token")
