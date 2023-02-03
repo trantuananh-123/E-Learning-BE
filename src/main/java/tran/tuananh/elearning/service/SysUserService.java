@@ -4,24 +4,24 @@ import org.json.simple.parser.ParseException;
 import tran.tuananh.elearning.dto.SysUserRequestDTO;
 import tran.tuananh.elearning.dto.TokenResponseDTO;
 import tran.tuananh.elearning.entity.SysUser;
-import tran.tuananh.elearning.response.GenerateResponse;
+import tran.tuananh.elearning.response.DetailResponseData;
 
 public interface SysUserService {
 
-    GenerateResponse<TokenResponseDTO> login(SysUserRequestDTO dto) throws ParseException;
+    DetailResponseData<TokenResponseDTO> login(SysUserRequestDTO dto) throws ParseException;
 
-    GenerateResponse<?> logout(SysUserRequestDTO dto);
+    DetailResponseData<?> logout(SysUserRequestDTO dto);
 
-    GenerateResponse<SysUser> signUp(SysUserRequestDTO dto);
+    DetailResponseData<SysUser> signUp(SysUserRequestDTO dto);
 
-    GenerateResponse<TokenResponseDTO> refreshToken(SysUserRequestDTO dto) throws ParseException;
+    DetailResponseData<TokenResponseDTO> refreshToken(SysUserRequestDTO dto) throws ParseException;
 
-    GenerateResponse<SysUser> delete(SysUserRequestDTO dto);
+    DetailResponseData<SysUser> delete(SysUserRequestDTO dto);
 
-    GenerateResponse<SysUser> lockAndUnlock(SysUserRequestDTO dto);
+    DetailResponseData<SysUser> lockAndUnlock(SysUserRequestDTO dto);
 
-    GenerateResponse<SysUser> getUserDetail();
+    DetailResponseData<SysUser> getUserDetail();
 
-    GenerateResponse<SysUser> updateProfile(SysUserRequestDTO dto);
+    DetailResponseData<SysUser> updateProfile(SysUserRequestDTO dto);
 
 }

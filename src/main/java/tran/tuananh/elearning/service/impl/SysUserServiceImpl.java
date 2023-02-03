@@ -8,7 +8,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.CreatedResponseUtil;
-import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import tran.tuananh.elearning.dto.SysUserRequestDTO;
 import tran.tuananh.elearning.dto.TokenResponseDTO;
 import tran.tuananh.elearning.entity.SysUser;
 import tran.tuananh.elearning.repository.SysUserRepository;
+import tran.tuananh.elearning.response.DetailResponseData;
 import tran.tuananh.elearning.response.GenerateResponse;
 import tran.tuananh.elearning.service.SysUserService;
 import tran.tuananh.elearning.util.CommonFunction;
@@ -71,7 +71,7 @@ public class SysUserServiceImpl implements SysUserService {
     private SysUserRepository sysUserRepository;
 
     @Override
-    public GenerateResponse<TokenResponseDTO> login(SysUserRequestDTO dto) throws ParseException {
+    public DetailResponseData<TokenResponseDTO> login(SysUserRequestDTO dto) throws ParseException {
         JSONParser parser = new JSONParser();
         TokenResponseDTO tokenResponseDTO = new TokenResponseDTO();
 
@@ -98,14 +98,14 @@ public class SysUserServiceImpl implements SysUserService {
             JSONObject json = (JSONObject) parser.parse(message);
             String errorMessage = (String) json.get("error_description");
             log.error(e.getMessage());
-            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null);
+            return GenerateResponse.generateDetailResponseData(errorMessage, null, HttpStatus.BAD_REQUEST.value());
         }
 
-        return new GenerateResponse<>(HttpStatus.OK.value(), "Login successfully", tokenResponseDTO);
+        return GenerateResponse.generateDetailResponseData("Login successfully", tokenResponseDTO, HttpStatus.OK.value());
     }
 
     @Override
-    public GenerateResponse<?> logout(SysUserRequestDTO dto) {
+    public DetailResponseData<?> logout(SysUserRequestDTO dto) {
         MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
         data.put("client_id", Collections.singletonList(clientID));
         data.put("client_secret", Collections.singletonList(clientSecret));
@@ -123,7 +123,7 @@ public class SysUserServiceImpl implements SysUserService {
         try {
             response = restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
-            return new GenerateResponse<>(response != null ? response.getStatusCodeValue() : HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return GenerateResponse.generateDetailResponseData(e.getMessage(), null, response.getStatusCodeValue());
         }
 
         data.put("token", Collections.singletonList(dto.getRefreshToken()));
@@ -133,14 +133,14 @@ public class SysUserServiceImpl implements SysUserService {
         try {
             response = restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
-            return new GenerateResponse<>(response != null ? response.getStatusCodeValue() : HttpStatus.BAD_REQUEST.value(), e.getMessage(), null);
+            return GenerateResponse.generateDetailResponseData(e.getMessage(), null, response.getStatusCodeValue());
         }
 
-        return new GenerateResponse<>(HttpStatus.OK.value(), "Logout successfully", null);
+        return GenerateResponse.generateDetailResponseData("Logout successfully", null, HttpStatus.OK.value());
     }
 
     @Override
-    public GenerateResponse<SysUser> signUp(SysUserRequestDTO dto) {
+    public DetailResponseData<SysUser> signUp(SysUserRequestDTO dto) {
         SysUser sysUser = mapper.fromTo(dto, SysUser.class);
 
         List<String> clientRoles = new ArrayList<>();
@@ -176,28 +176,28 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser.setId(userId);
             sysUser = sysUserRepository.save(sysUser);
         } else if (response.getStatus() == HttpStatus.CONFLICT.value()) {
-            return new GenerateResponse<>(HttpStatus.CONFLICT.value(), "User exists with same username", null);
+            return GenerateResponse.generateDetailResponseData("User exists with same username", null, HttpStatus.CONFLICT.value());
         }
-        return new GenerateResponse<>(HttpStatus.CREATED.value(), "SignUp successfully", sysUser);
+        return GenerateResponse.generateDetailResponseData("SignUp successfully", sysUser, HttpStatus.CREATED.value());
     }
 
     @Override
-    public GenerateResponse<SysUser> delete(SysUserRequestDTO dto) {
+    public DetailResponseData<SysUser> delete(SysUserRequestDTO dto) {
         SysUser sysUser = mapper.fromTo(dto, SysUser.class);
-        List<UserRepresentation> userRepresentationList = CommonFunction.getRealmResource().users().search(dto.getUsername());
-        if (userRepresentationList.size() != 0) {
-            UserRepresentation userRepresentation = userRepresentationList.get(0);
-            CommonFunction.getUserResource().get(userRepresentation.getId()).remove();
-            sysUser.setId(userRepresentation.getId());
+
+        String userId = CommonFunction.getUserId();
+        if (userId != null) {
+            CommonFunction.getUserResource().get(userId).remove();
+            sysUser.setId(userId);
             sysUser = sysUserRepository.save(sysUser);
         } else {
-            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), "User does not exist", null);
+            return GenerateResponse.generateDetailResponseData("User does not exist", null, HttpStatus.BAD_REQUEST.value());
         }
-        return new GenerateResponse<>(HttpStatus.OK.value(), "Delete user successfully", sysUser);
+        return GenerateResponse.generateDetailResponseData("Delete user successfully", sysUser, HttpStatus.OK.value());
     }
 
     @Override
-    public GenerateResponse<SysUser> lockAndUnlock(SysUserRequestDTO dto) {
+    public DetailResponseData<SysUser> lockAndUnlock(SysUserRequestDTO dto) {
         String message = dto.getIsActive() ? "Unlock" : "Lock";
         SysUser sysUser = mapper.fromTo(dto, SysUser.class);
         List<UserRepresentation> userRepresentationList = CommonFunction.getRealmResource().users().search(dto.getUsername());
@@ -208,18 +208,18 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser.setId(userRepresentation.getId());
             sysUser = sysUserRepository.save(sysUser);
         } else {
-            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), message + " user failed", null);
+            return GenerateResponse.generateDetailResponseData(message + " user failed", null, HttpStatus.BAD_REQUEST.value());
         }
-        return new GenerateResponse<>(HttpStatus.OK.value(), message + " user successfully", sysUser);
+        return GenerateResponse.generateDetailResponseData(message + " user failed", sysUser, HttpStatus.OK.value());
     }
 
     @Override
-    public GenerateResponse<SysUser> getUserDetail() {
+    public DetailResponseData<SysUser> getUserDetail() {
         return null;
     }
 
     @Override
-    public GenerateResponse<SysUser> updateProfile(SysUserRequestDTO dto) {
+    public DetailResponseData<SysUser> updateProfile(SysUserRequestDTO dto) {
         SysUser sysUser = mapper.fromTo(dto, SysUser.class);
         List<UserRepresentation> userRepresentationList = CommonFunction.getRealmResource().users().search(dto.getUsername());
         if (userRepresentationList.size() != 0) {
@@ -240,13 +240,13 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser.setId(userRepresentation.getId());
             sysUser = sysUserRepository.save(sysUser);
         } else {
-            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), "User does not exist", null);
+            return GenerateResponse.generateDetailResponseData("User does not exist", null, HttpStatus.BAD_REQUEST.value());
         }
-        return new GenerateResponse<>(HttpStatus.OK.value(), "Delete user successfully", sysUser);
+        return GenerateResponse.generateDetailResponseData("Delete user successfully", sysUser, HttpStatus.OK.value());
     }
 
     @Override
-    public GenerateResponse<TokenResponseDTO> refreshToken(SysUserRequestDTO dto) throws ParseException {
+    public DetailResponseData<TokenResponseDTO> refreshToken(SysUserRequestDTO dto) throws ParseException {
         JSONParser parser = new JSONParser();
         TokenResponseDTO tokenResponseDTO = new TokenResponseDTO();
 
@@ -271,10 +271,9 @@ public class SysUserServiceImpl implements SysUserService {
             String message = "{".concat(e.getMessage().split("[{}]")[1]).concat("}");
             JSONObject json = (JSONObject) parser.parse(message);
             String errorMessage = (String) json.get("error_description");
-            log.error(e.getMessage());
-            return new GenerateResponse<>(HttpStatus.BAD_REQUEST.value(), errorMessage, null);
+            return GenerateResponse.generateDetailResponseData(errorMessage, null, HttpStatus.BAD_REQUEST.value());
         }
 
-        return new GenerateResponse<>(HttpStatus.OK.value(), "Refresh token successfully", tokenResponseDTO);
+        return GenerateResponse.generateDetailResponseData("Refresh token successfully", tokenResponseDTO, HttpStatus.OK.value());
     }
 }

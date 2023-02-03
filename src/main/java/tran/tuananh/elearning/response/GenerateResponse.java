@@ -1,15 +1,18 @@
 package tran.tuananh.elearning.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public class GenerateResponse {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class GenerateResponse<T> {
+    public static <T> ListResponseData<T> generateListResponseData(String message, Long totalItem, T data, int status) {
+        ListResponseData<T> listResponseData = new ListResponseData<>();
+        listResponseData.setStatus(status);
+        listResponseData.setMessage(message);
+        listResponseData.setTotalItem(totalItem);
+        listResponseData.setData(data);
+        return listResponseData;
+    }
 
-    private Integer status;
-    private String message;
-    private T data;
+    public static <T> DetailResponseData<T> generateDetailResponseData(String message, T data, int status) {
+        DetailResponseData<T> detailResponseData = new DetailResponseData<>();
+        return detailResponseData;
+    }
 }
