@@ -47,7 +47,7 @@ public class CatsCategoryServiceImpl implements CatsCategoryService {
             catsCategoryList = catsCategoryRepository.searchWithoutPage(dto.getId());
             totalItem = (long) catsCategoryList.size();
         }
-        return GenerateResponse.generateListResponseData("Get category list successfully", totalItem, catsCategoryList, HttpStatus.OK.value());
+        return GenerateResponse.generateListResponseData("Get category list successfully", catsCategoryList, totalItem, HttpStatus.OK.value(), page, size);
     }
 
     @Override

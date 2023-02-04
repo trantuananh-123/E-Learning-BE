@@ -15,7 +15,7 @@ import tran.tuananh.elearning.service.CatsCategoryService;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "category")
+@RequestMapping(value = "cats-category")
 public class CatsCategoryController {
 
     @Autowired

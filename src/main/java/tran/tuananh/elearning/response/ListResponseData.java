@@ -12,5 +12,7 @@ public class ListResponseData<T> {
     private Integer status;
     private String message;
     private Long totalItem;
+    private Integer page;
+    private Integer size;
     private T data;
 }

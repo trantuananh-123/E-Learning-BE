@@ -10,7 +10,7 @@ import tran.tuananh.elearning.response.DetailResponseData;
 import tran.tuananh.elearning.service.SysUserService;
 
 @RestController
-@RequestMapping(value = "user")
+@RequestMapping(value = "sys-user")
 public class UserController {
 
     @Autowired

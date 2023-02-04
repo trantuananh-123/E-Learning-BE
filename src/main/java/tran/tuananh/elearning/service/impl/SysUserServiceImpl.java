@@ -156,7 +156,7 @@ public class SysUserServiceImpl implements SysUserService {
 
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
-        credentialRepresentation.setValue(Base64.encode(dto.getPassword()));
+        credentialRepresentation.setValue(dto.getPassword());
         credentialRepresentation.setTemporary(false);
 
         UserRepresentation userRepresentation = new UserRepresentation();
@@ -177,6 +177,8 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser = sysUserRepository.save(sysUser);
         } else if (response.getStatus() == HttpStatus.CONFLICT.value()) {
             return GenerateResponse.generateDetailResponseData("User exists with same username", null, HttpStatus.CONFLICT.value());
+        } else if (response.getStatus() == HttpStatus.BAD_REQUEST.value()) {
+            return GenerateResponse.generateDetailResponseData("Bad request", null, HttpStatus.BAD_REQUEST.value());
         }
         return GenerateResponse.generateDetailResponseData("SignUp successfully", sysUser, HttpStatus.CREATED.value());
     }
