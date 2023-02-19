@@ -3,8 +3,8 @@ package tran.tuananh.elearning.controller;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import tran.tuananh.elearning.dto.SysUserRequestDTO;
-import tran.tuananh.elearning.dto.TokenResponseDTO;
+import tran.tuananh.elearning.dto.request.SysUserRequestDTO;
+import tran.tuananh.elearning.dto.response.TokenResponseDTO;
 import tran.tuananh.elearning.entity.SysUser;
 import tran.tuananh.elearning.response.DetailResponseData;
 import tran.tuananh.elearning.service.SysUserService;
@@ -56,7 +56,12 @@ public class UserController {
         return sysUserService.updateProfile(dto);
     }
 
-    @GetMapping(value = "/get-user-detail")
+    @PostMapping(value = "/update-password")
+    public DetailResponseData<SysUser> updatePassword(@RequestBody SysUserRequestDTO dto) {
+        return sysUserService.updatePassword(dto);
+    }
+
+    @GetMapping(value = "/get-detail")
     public DetailResponseData<SysUser> getUserDetail() {
         return sysUserService.getUserDetail();
     }

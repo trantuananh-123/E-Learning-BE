@@ -1,12 +1,11 @@
 package tran.tuananh.elearning.controller;
 
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tran.tuananh.elearning.dto.CatsCategoryRequestDTO;
+import tran.tuananh.elearning.dto.request.CatsCategoryRequestDTO;
 import tran.tuananh.elearning.entity.CatsCategory;
 import tran.tuananh.elearning.response.DetailResponseData;
 import tran.tuananh.elearning.response.ListResponseData;

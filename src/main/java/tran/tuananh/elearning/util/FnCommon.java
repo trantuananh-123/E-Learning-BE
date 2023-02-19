@@ -1,5 +1,7 @@
 package tran.tuananh.elearning.util;
 
+import com.google.gson.Gson;
+import com.squareup.okhttp.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.KeycloakPrincipal;
@@ -16,10 +18,14 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import tran.tuananh.elearning.dto.request.SysUserRequestDTO;
+import tran.tuananh.elearning.dto.response.TokenResponseDTO;
+
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-public class CommonFunction {
+public class FnCommon {
 
     public static String serverURL;
     public static String realm;
@@ -94,8 +100,18 @@ public class CommonFunction {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             KeycloakPrincipal keycloakPrincipal = (KeycloakPrincipal) authentication.getPrincipal();
-            String userId = keycloakPrincipal.getKeycloakSecurityContext().getToken().getSubject();
-            return userId;
+            return keycloakPrincipal.getKeycloakSecurityContext().getToken().getSubject();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
+    }
+
+    public static String getUserToken() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            KeycloakPrincipal keycloakPrincipal = (KeycloakPrincipal) authentication.getPrincipal();
+            return keycloakPrincipal.getKeycloakSecurityContext().getTokenString();
         } catch (Exception e) {
             log.error(e.getMessage());
             return null;
@@ -104,5 +120,44 @@ public class CommonFunction {
 
     public static String getPropertyValue(String propertyName) {
         return env.getProperty(propertyName);
+    }
+
+    public static boolean isNullOrEmpty(String s) {
+        if (s == null || s.isEmpty()) {
+            return true;
+        }
+        s = s.trim();
+        if ("".equals(s)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static String getUserToken(String username, String password) {
+        OkHttpClient client = new OkHttpClient();
+        SysUserRequestDTO dto = new SysUserRequestDTO(username, password);
+        RequestBody body = RequestBody.create(Constant.FORM_URLENCODED_BODY, dto.toString());
+        try {
+            client.setConnectTimeout(30, TimeUnit.SECONDS);
+            client.setReadTimeout(30, TimeUnit.SECONDS);
+            client.setWriteTimeout(30, TimeUnit.SECONDS);
+            HttpUrl.Builder httpBuilder = HttpUrl.parse(FnCommon.getPropertyValue("keycloak.auth-server-url") + FnCommon.getPropertyValue("my-keycloak.token-url")).newBuilder().username(dto.getUsername()).password(dto.getPassword());
+            Request request = new Request.Builder()
+                    .header("Accept", "*/*")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("Accept-Encoding", "gzip, deflate, br")
+                    .url(httpBuilder.build())
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            TokenResponseDTO responseDTO;
+            if (response != null) {
+                responseDTO = new Gson().fromJson(response.body().string(), TokenResponseDTO.class);
+                return responseDTO.getAccess_token();
+            }
+        } catch (Exception e) {
+            log.error("Has error", e);
+        }
+        return "";
     }
 }

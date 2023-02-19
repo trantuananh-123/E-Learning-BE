@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import tran.tuananh.elearning.dto.CatsNationRequestDTO;
+import tran.tuananh.elearning.dto.request.CatsNationRequestDTO;
 import tran.tuananh.elearning.entity.CatsNation;
 import tran.tuananh.elearning.response.ListResponseData;
 import tran.tuananh.elearning.service.CatsNationService;

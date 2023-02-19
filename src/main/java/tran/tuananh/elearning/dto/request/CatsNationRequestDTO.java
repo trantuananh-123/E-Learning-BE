@@ -1,4 +1,4 @@
-package tran.tuananh.elearning.dto;
+package tran.tuananh.elearning.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

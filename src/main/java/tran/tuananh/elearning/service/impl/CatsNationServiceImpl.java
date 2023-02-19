@@ -7,7 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import tran.tuananh.elearning.dto.CatsNationRequestDTO;
+import tran.tuananh.elearning.dto.request.CatsNationRequestDTO;
 import tran.tuananh.elearning.entity.CatsNation;
 import tran.tuananh.elearning.repository.CatsNationRepository;
 import tran.tuananh.elearning.response.GenerateResponse;

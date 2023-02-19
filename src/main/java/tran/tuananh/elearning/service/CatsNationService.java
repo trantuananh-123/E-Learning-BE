@@ -1,6 +1,6 @@
 package tran.tuananh.elearning.service;
 
-import tran.tuananh.elearning.dto.CatsNationRequestDTO;
+import tran.tuananh.elearning.dto.request.CatsNationRequestDTO;
 import tran.tuananh.elearning.entity.CatsNation;
 import tran.tuananh.elearning.response.ListResponseData;
 
